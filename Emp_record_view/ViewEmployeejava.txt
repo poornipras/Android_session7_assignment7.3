@@ -1,0 +1,81 @@
+package com.pooja.employeedatabase;
+
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+public class ViewEmployee extends AppCompatActivity {
+TextView eid,name,age;
+    ImageView getimage;
+    Button getvalues,back;
+    Dbhelper dbhelper;
+    ArrayList<GetValues>my;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_view_employee);
+
+        dbhelper=new Dbhelper(ViewEmployee.this);
+        getvalues=(Button)findViewById(R.id.button_getdetails);
+        back=(Button)findViewById(R.id.btn_back);
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent back=new Intent(ViewEmployee.this,MainActivity.class);
+                startActivity(back);
+            }
+        });
+        getimage=(ImageView)findViewById(R.id.imageView_getImage);
+        eid=(TextView)findViewById(R.id.edit_emp_id);
+        name=(TextView)findViewById(R.id.edit_emp_name);
+        age=(TextView)findViewById(R.id.edit_emp_age);
+        my=new ArrayList<GetValues>();
+        getvalues.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                int id=Integer.parseInt(eid.getText().toString());
+                getemployee(id);
+            }
+        });
+    }
+
+    public void getemployee(int id)
+    {
+        my=dbhelper.getdetails(id);
+        if(my.isEmpty())
+        {
+            Toast.makeText(ViewEmployee.this,"No such entry was found",Toast.LENGTH_LONG).show();
+            name.setText("");
+            age.setText("");
+            getimage.setImageResource(R.mipmap.ic_launcher);
+        }
+        else {
+            name.setText(my.get(0).getName());
+            age.setText(my.get(0).getAge());
+            byte[] getbyte = my.get(0).getImage();
+            //getting the image
+            getimage.setImageBitmap(converttobitmap(getbyte));
+        }
+    }
+
+    public Bitmap converttobitmap(byte[] bytes)
+    {
+            ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(bytes);
+            Bitmap bitmap = BitmapFactory.decodeStream(arrayInputStream);
+            return bitmap;
+        }
+    }
+

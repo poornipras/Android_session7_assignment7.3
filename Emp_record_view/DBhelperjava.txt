@@ -1,0 +1,89 @@
+package com.pooja.employeedatabase;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+import java.util.ArrayList;
+
+/**
+ * Created by Pooja on 1/11/2017.
+ */
+
+public class Dbhelper
+{
+    helper myhelper;
+    public Dbhelper(Context context)
+    {
+        myhelper=new helper(context);
+    }
+    public long Insertintodb(String name,String age,byte[] image)throws SQLException
+    {
+        SQLiteDatabase sqLiteDatabase=myhelper.getWritableDatabase();
+        ContentValues contentValues=new ContentValues();
+        contentValues.put(myhelper.COL_NAME,name);
+        contentValues.put(myhelper.COL_AGE,age);
+        contentValues.put(myhelper.COL_IMAGE,image);
+        long result=sqLiteDatabase.insert(myhelper.TABLE_NAME,null,contentValues);
+        return result;
+    }
+public ArrayList<GetValues>getdetails(int id)
+{
+    SQLiteDatabase database=myhelper.getWritableDatabase();
+    String[]columns={myhelper.COL_NAME,myhelper.COL_AGE,myhelper.COL_IMAGE};
+    Cursor cursor= database.query(myhelper.TABLE_NAME,columns,myhelper.ID +"=?",new String[]{String.valueOf(id)},null,null,null,null);
+    ArrayList<GetValues> arrayList=new ArrayList<>();
+    GetValues getValues;
+    while (cursor.moveToNext())
+    {
+        String ename=cursor.getString(cursor.getColumnIndex(myhelper.COL_NAME));
+        String age=cursor.getString(cursor.getColumnIndex(myhelper.COL_AGE));
+        byte[] img=cursor.getBlob(cursor.getColumnIndex(myhelper.COL_IMAGE));
+        getValues=new GetValues(ename,age,img);
+        arrayList.add(getValues);
+    }
+    return arrayList;
+}
+   static class helper extends SQLiteOpenHelper
+    {
+        private static final String Database_name="Employee.db";
+        private static final String TABLE_NAME="Employee";
+        private static final int VERSION=1;
+        private static final String ID="ID";
+        private static final String COL_NAME="EMP_NAME";
+        private static final String COL_AGE="AGE";
+        private static final String COL_IMAGE="IMAGE";
+
+        public helper(Context context) {
+            super(context, Database_name, null, VERSION);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase sqLiteDatabase)
+        {
+            try{
+                String create_table="CREATE TABLE "+TABLE_NAME+"("+ID+" INTEGER PRIMARY KEY AUTOINCREMENT,"+COL_NAME+" TEXT,"+COL_AGE+" TEXT,"+COL_IMAGE+" BLOB);";
+                sqLiteDatabase.execSQL(create_table);
+            }
+            catch (SQLException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+            try{
+                sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TABLE_NAME);
+                onCreate(sqLiteDatabase);
+            }catch (SQLException e)
+            {
+                e.printStackTrace();
+            }
+
+        }
+    }
+}
